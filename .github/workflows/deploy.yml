@@ -77,8 +77,10 @@ jobs:
           DB_PORT: 5432
           SECRET_KEY: ci-test-secret-key
 
-      - name: Run tests
-        run: python manage.py test
+      - name: Run tests with coverage
+        run: |
+          coverage run manage.py test
+          coverage report
         env:
           DB_NAME: test_db
           DB_USER: test_user
@@ -148,10 +150,6 @@ jobs:
           
       - name: Copy nginx.conf
         run: |
-          ssh -o StrictHostKeyChecking=no \
-            ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} \
-            "mkdir -p /opt/django-rest-framework/nginx"
-          
           scp -o StrictHostKeyChecking=no \
             nginx.conf \
             ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/opt/django-rest-framework/

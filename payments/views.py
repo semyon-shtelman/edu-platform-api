@@ -16,12 +16,18 @@ from payments.services import (
 
 class PaymentListAPIView(generics.ListAPIView):
     serializer_class = PaymentSerializer
-    queryset = Payment.objects.all()
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["course", "lesson", "method"]
     search_fields = ["course__title", "lesson__title"]
     ordering_fields = ["date", "amount"]
     ordering = ["-date"]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return Payment.objects.all()
+        return Payment.objects.filter(user=user)
 
 
 class CreatePaymentAPIView(APIView):

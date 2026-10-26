@@ -11,15 +11,15 @@ def create_stripe_product(name):
 
 def create_stripe_price(product_id, amount):
     price = stripe.Price.create(
-        currency="usd", unit_amount=amount * 100, product=product_id
+        currency="rub", unit_amount=amount * 100, product=product_id
     )
     return price
 
 
 def create_stripe_session(price_id):
     session = stripe.checkout.Session.create(
-        success_url="https://example.com/success/",
-        cancel_url="https://example.com/cancel/",
+        success_url=settings.STRIPE_SUCCESS_URL,
+        cancel_url=settings.STRIPE_CANCEL_URL,
         line_items=[{"price": price_id, "quantity": 1}],
         mode="payment",
     )

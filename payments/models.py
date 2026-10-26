@@ -48,7 +48,7 @@ class Payment(models.Model):
     payment_url = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.course if self.course else self.lesson}- {self.amount}"
+        return f"{self.user.email} - {self.course if self.course else self.lesson} - {self.amount}"
 
     def clean(self):
         if self.course and self.lesson:

@@ -167,9 +167,10 @@ SIMPLE_JWT = {
 }
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_SUCCESS_URL = os.getenv("STRIPE_SUCCESS_URL", "http://localhost/success/")
+STRIPE_CANCEL_URL = os.getenv("STRIPE_CANCEL_URL", "http://localhost/cancel/")
 
 # -- Настройки для Celery --
-CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = False
 
 CELERY_BEAT_SCHEDULE = {
@@ -187,7 +188,7 @@ CELERY_BROKER_URL = os.getenv(
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 # Часовой пояс для работы Celery
-CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE")
+CELERY_TIMEZONE = os.getenv("CELERY_TIMEZONE", TIME_ZONE)
 
 # Флаг отслеживания выполнения задач
 CELERY_TASK_TRACK_STARTED = (

@@ -1,8 +1,14 @@
+from datetime import timedelta
+
 from django.contrib.auth.models import Group
+from django.core import mail
+from django.test import TestCase, override_settings
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from education.models import Course, Lesson, Subscription
+from education.tasks import deactivate_inactive_users
 from users.models import User
 
 
@@ -100,3 +106,34 @@ class SubscriptionTestCace(APITestCase):
         Subscription.objects.create(user=self.user, course=self.course)
         response = self.client.post(f"/education/course/{self.course.id}/subscribe/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class DeactivateInactiveUsersTestCase(TestCase):
+
+    def setUp(self):
+        old = timezone.now() - timedelta(days=40)
+
+        self.active = User.objects.create_user(
+            email="active@test.com", last_login=timezone.now()
+        )
+        self.inactive = User.objects.create_user(
+            email="inactive@test.com", last_login=old
+        )
+        self.never_logged_in = User.objects.create_user(email="never@test.com")
+        User.objects.filter(pk=self.never_logged_in.pk).update(date_joined=old)
+        self.new_user = User.objects.create_user(email="new@test.com")
+
+    def test_deactivate_inactive_users(self):
+        deactivate_inactive_users()
+
+        for user in (self.active, self.inactive, self.never_logged_in, self.new_user):
+            user.refresh_from_db()
+
+        self.assertTrue(self.active.is_active)
+        self.assertFalse(self.inactive.is_active)
+        self.assertFalse(self.never_logged_in.is_active)
+        self.assertTrue(self.new_user.is_active)
+
+        recipients = sorted(m.to[0] for m in mail.outbox)
+        self.assertEqual(recipients, ["inactive@test.com", "never@test.com"])
