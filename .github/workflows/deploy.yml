@@ -75,6 +75,7 @@ jobs:
           DB_PASSWORD: test_password
           DB_HOST: localhost
           DB_PORT: 5432
+          SECRET_KEY: ci-test-secret-key
 
       - name: Run tests
         run: python manage.py test
@@ -84,6 +85,7 @@ jobs:
           DB_PASSWORD: test_password
           DB_HOST: localhost
           DB_PORT: 5432
+          SECRET_KEY: ci-test-secret-key
 
   # ============================================
   # 3. БИЛД (сборка Docker образа)
@@ -159,8 +161,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no \
           ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << EOF
             cd /opt/django-rest-framework
-            docker compose pull
+            docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d
-            docker compose exec -T web python manage.py migrate
-            docker compose exec -T web python manage.py collectstatic --noinput
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py migrate
+            docker compose -f docker-compose.prod.yml exec -T web python manage.py collectstatic --noinput
           EOF

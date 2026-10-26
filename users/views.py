@@ -9,6 +9,4 @@ class UserCreateAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
 
     def perform_create(self, serializer):
-        user = serializer.save(is_active=True)
-        user.set_password(user.password)
-        user.save()
+        serializer.save(is_active=True)
